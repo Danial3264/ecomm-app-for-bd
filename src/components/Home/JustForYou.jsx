@@ -14,16 +14,15 @@ const JustForYou = () => {
     dispatch(fetchProducts());
   }, [dispatch]);
 
-  useEffect(()=>{
+  useEffect(() => {
     axios.get('/categories')
-    .then((response)=>{
-      setCategories(response.data)
-    })
-    .catch(error => {
-      console.error('Error fetching categories:', error);
-    
-    });
-  },[])
+      .then((response) => {
+        setCategories(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching categories:', error);
+      });
+  }, []);
 
   // Get products, status, and error from the Redux store
   const { products, status, error } = useSelector((state) => state.products);
@@ -76,7 +75,6 @@ const JustForYou = () => {
   // Filter the "Just for You" products (for example, products with category 'JustForYou')
   const justForYouCategory = categories.find((category) => category.category_name === "JustForYou");
   const justForYouProducts = products.filter((product) => product.category_id === justForYouCategory?.id);
-  
 
   return (
     <div className="bg-white">
@@ -128,7 +126,7 @@ const JustForYou = () => {
                         >
                           <option value="">Select Size</option>
                           {availableSizes.map((size) => (
-                            <option key={size.id} value={size.id}>
+                            <option key={size.id} value={size.size}>
                               {size.size}
                             </option>
                           ))}

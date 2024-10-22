@@ -4,8 +4,7 @@ import Search from './Search';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { addToCart,decreaseQuantity, increaseQuantity } from '../../../redux/CartSlice';
-import { fetchProducts } from '../../../redux/ProductThunks';
+import { addToCart, decreaseQuantity, increaseQuantity } from '../../../redux/CartSlice';
 import Logo from './Logo';
 
 const Navbar = () => {
@@ -28,10 +27,10 @@ const Navbar = () => {
     }
     const newProducts = products.filter((product) => {
       const productName = product.product_name.toLowerCase();
-      return productName.startsWith(value);  
+      return productName.includes(value);
     });
-    
-    setFilteredProducts(newProducts); 
+
+    setFilteredProducts(newProducts);
   };
 
   const toggleMenu = () => {
@@ -41,8 +40,8 @@ const Navbar = () => {
   useEffect(() => {
     axios.get('/categories')
       .then(response => {
-        setCategories(response.data); 
-        setLoading(false); 
+        setCategories(response.data);
+        setLoading(false);
       })
       .catch(error => {
         console.error('Error fetching categories:', error);
@@ -60,16 +59,16 @@ const Navbar = () => {
     dispatch(addToCart({ ...product, quantity: 1 }));  // Add product to cart
   };
 
-  const handleIncreaseQuantity = (productId) => {
-    dispatch(increaseQuantity(productId));
+  const handleIncreaseQuantity = (productId, size) => {
+    dispatch(increaseQuantity({ id: productId, size }));
   };
 
-  const handleDecreaseQuantity = (productId) => {
-    dispatch(decreaseQuantity(productId));
+  const handleDecreaseQuantity = (productId, size) => {
+    dispatch(decreaseQuantity({ id: productId, size }));
   };
 
-  const getCartItem = (productId) => {
-    return cartItems.find((item) => item.id === productId);
+  const getCartItem = (productId, size) => {
+    return cartItems.find((item) => item.id === productId && item.size === size);
   };
 
   return (
@@ -112,7 +111,7 @@ const Navbar = () => {
       {isOpenSearch && filteredProducts.length > 0 && (
         <div className="absolute bg-white shadow-lg rounded-lg w-full max-w-md mt-2 right-0 text-black p-4 z-50 space-y-2">
           {filteredProducts.map((product) => {
-            const cartItem = getCartItem(product.id);
+            const cartItem = getCartItem(product.id, product.size); // Update to include size
             return (
               <div key={product.id} className="block hover:bg-gray-100 p-2 rounded-lg border">
                 <div className="flex items-center space-x-4">
@@ -120,12 +119,12 @@ const Navbar = () => {
                   <div className="flex-grow flex justify-between items-center">
                     <div>
                       <p className="font-bold text-gray-800">{product.product_name}</p>
-                      <p className="text-gray-500">Price: ৳{product.offer_price||product.product_price}</p>
+                      <p className="text-gray-500">Price: ৳{product.offer_price || product.product_price}</p>
                       {cartItem ? (
                         <div className="flex items-center space-x-4 mt-2">
-                          <button className="px-4 py-2 bg-red-500 text-white rounded" onClick={() => handleDecreaseQuantity(cartItem.id)}>-</button>
+                          <button className="px-4 py-2 bg-red-500 text-white rounded" onClick={() => handleDecreaseQuantity(cartItem.id, cartItem.size)}>-</button>
                           <span className="text-lg font-semibold">{cartItem.quantity}</span>
-                          <button className="px-4 py-2 bg-green-500 text-white rounded" onClick={() => handleIncreaseQuantity(cartItem.id)}>+</button>
+                          <button className="px-4 py-2 bg-green-500 text-white rounded" onClick={() => handleIncreaseQuantity(cartItem.id, cartItem.size)}>+</button>
                         </div>
                       ) : (
                         <button className="rounded bg-gradient-to-r from-violet-500 to-fuchsia-500 text-md font-semibold p-2 mt-2 hover:animate-bounce" onClick={() => handleAddToCart(product)}>

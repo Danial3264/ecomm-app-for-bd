@@ -114,10 +114,16 @@ useEffect(() => {
   };
   
 
-   // Handle deleting an item from the cart
-   const handleDelete = (itemId, size) => {
+  // Handle deleting an item from the cart
+const handleDelete = (itemId, size) => {
+  if (cart.length > 1) {
+    // If more than one item exists in the cart, delete the item
     dispatch(deleteItem({id: itemId, size})); // Dispatch the action to remove the item
-  };
+  } else {
+    // Show an alert or message to the user
+    alert('You cannot delete the last item in the cart.');
+  }
+};
 
   return (
     <div>

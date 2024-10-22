@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProducts } from '../../redux/ProductThunks';
-import { addToCart } from '../../redux/CartSlice';
+import { addToCart, increaseQuantity, decreaseQuantity } from '../../redux/CartSlice'; // Import actions for increasing and decreasing quantity
 import axios from 'axios';
 
 const Product = () => {
@@ -13,7 +13,8 @@ const Product = () => {
   const { products, status, error } = useSelector((state) => state.products); // Access products and status from Redux
   const [product, setProduct] = useState(null);
   const [selectedSize, setSelectedSize] = useState(''); // State for selected size
-  const [sizes,setSizes] = useState([])
+  const [sizes, setSizes] = useState([]);
+  const [quantity, setQuantity] = useState(1); // Local state to manage product quantity
 
   // Fetch products when the component mounts
   useEffect(() => {
@@ -22,15 +23,15 @@ const Product = () => {
     }
   }, [dispatch, status]);
 
-  useEffect(()=>{
+  useEffect(() => {
     axios.get('/product-sizes')
-    .then(response => {
-      setSizes(response.data)
-    })
-    .catch(error => {
-      console.log(error);
-    })
-  },[])
+      .then(response => {
+        setSizes(response.data);
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  }, []);
 
   // Find the product by ID from the Redux store once products are available
   useEffect(() => {
@@ -53,7 +54,7 @@ const Product = () => {
       <div className="text-center my-4 text-red-500">
         {error}
         <br />
-        <button 
+        <button
           className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-300"
           onClick={() => navigate('/products')} // Redirect back to product listing page
         >
@@ -68,7 +69,7 @@ const Product = () => {
       <div className="text-center my-4 text-red-500">
         Product not found.
         <br />
-        <button 
+        <button
           className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-300"
           onClick={() => navigate('/products')} // Redirect back to product listing page
         >
@@ -80,8 +81,20 @@ const Product = () => {
 
   // Handle "Buy Now" click, redirect to checkout
   const handleBuyNow = (product) => {
-    dispatch(addToCart({ ...product, quantity: 1, size: selectedSize })); // Add size to cart item
+    dispatch(addToCart({ ...product, quantity, size: selectedSize })); // Add product with quantity and size
     navigate('/checkout', { state: { product, selectedSize } }); // Pass product and size details to checkout
+  };
+
+  // Handle increase quantity
+  const handleIncreaseQuantity = () => {
+    setQuantity(quantity + 1);
+  };
+
+  // Handle decrease quantity
+  const handleDecreaseQuantity = () => {
+    if (quantity > 1) {
+      setQuantity(quantity - 1);
+    }
   };
 
   return (
@@ -125,13 +138,30 @@ const Product = () => {
                 className="p-2 border rounded-md"
               >
                 <option value="">Choose a size</option>
-                {sizes.map((size)=>
-                  <option value={size.size}>{size.size}</option>
+                {sizes.map((size) =>
+                  <option key={size.id} value={size.size}>{size.size}</option>
                 )}
-                
               </select>
             </div>
           )}
+
+          {/* Quantity controls */}
+          <div className="flex items-center space-x-4 mt-4">
+            <button
+              className="px-4 py-2 bg-red-500 text-white rounded-lg"
+              onClick={handleDecreaseQuantity}
+              disabled={quantity === 1}
+            >
+              -
+            </button>
+            <span className="text-lg font-semibold">{quantity}</span>
+            <button
+              className="px-4 py-2 bg-green-500 text-white rounded-lg"
+              onClick={handleIncreaseQuantity}
+            >
+              +
+            </button>
+          </div>
 
           {/* Buy Now Button */}
           <button
